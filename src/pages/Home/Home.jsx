@@ -2,10 +2,11 @@ import { React, useState } from "react";
 import Header from "../../components/Header/Header";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import VideoGrid from "../../components/VideoGrid/VideoGrid";
+import { useSelector } from "react-redux";
 
 function Home() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const isUserSignedIn = false; // Add this line
+    const { isAuthenticated } = useSelector(state => state.auth);
 
     // Ye data backend se aayega
     const videos = [
@@ -29,31 +30,30 @@ function Home() {
         <div className="min-h-screen bg-white">
             <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-            <div className="pt-14">
-                <Sidebar isOpen={sidebarOpen} />
+            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-                <main className="lg:ml-20 pr-2">
-                    {/* Categories */}
-                    {isUserSignedIn && (
-                        <div className="sticky top-14 bg-white border-b border-gray-200 px-4 lg:px-6 py-3 overflow-x-auto z-20">
-                            <div className="flex gap-3 w-max">
-                                {categories.map((cat, i) => (
-                                    <button
-                                        key={i}
-                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${i === 0 ? 'bg-black text-white' : 'bg-gray-100 hover:bg-gray-200'
-                                            }`}
-                                    >
-                                        {cat}
-                                    </button>
-                                ))}
-                            </div>
+            <main className="lg:ml-20 pt-18">
+                {/* Categories */}
+                {isAuthenticated && (
+                    <div className="sticky top-14 bg-white border-b border-gray-200 px-4 lg:px-6 py-3 overflow-x-auto z-20">
+                        <div className="flex gap-3 w-max">
+                            {categories.map((cat, i) => (
+                                <button
+                                    key={i}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${i === 0 ? 'bg-black text-white' : 'bg-gray-100 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
                         </div>
-                    )}
+                    </div>
+                )}
 
-                    {/* Show message if not signed in, otherwise show videos */}
-                    {!isUserSignedIn ? (
-                        <div className="flex items-center justify-center h-[calc(100vh-400px)] px-4">
-                            <div className="
+                {/* Show message if not signed in, otherwise show videos */}
+                {!isAuthenticated ? (
+                    <div className="flex items-center justify-center min-h-[calc(100svh-72px)] px-4">
+                        <div className="
                                 bg-white 
                                 rounded-xl 
                                 shadow-[0_4px_16px_rgba(0,0,0,0.12)]
@@ -63,21 +63,20 @@ function Home() {
                                 w-full
                                 text-center
                                 "
-                            >
-                                <h2 className="text-2xl font-semibold mb-2 text-black">
-                                    Try searching to get started
-                                </h2>
+                        >
+                            <h2 className="text-2xl font-semibold mb-2 text-black">
+                                Try searching to get started
+                            </h2>
 
-                                <p className="text-gray-600">
-                                    Start watching videos to help us build a feed of videos that you'll love.
-                                </p>
-                            </div>
+                            <p className="text-gray-600">
+                                Start watching videos to help us build a feed of videos that you'll love.
+                            </p>
                         </div>
-                    ) : (
-                        <VideoGrid videos={videos} />
-                    )}
-                </main>
-            </div>
+                    </div>
+                ) : (
+                    <VideoGrid videos={videos} />
+                )}
+            </main>
         </div>
     );
 };

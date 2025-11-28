@@ -11,7 +11,7 @@ function SearchBar() {
 
   return (
     <div className="flex items-center flex-1 max-w-xl mx-2 sm:mx-4">
-      <div className="flex items-center w-full">
+      <div className="flex items-center w-full max-w-xl">
         <div className="flex items-center flex-1 border border-gray-300 rounded-l-full px-3 sm:px-4 py-1.5 sm:py-2">
           <input
             type="text"
@@ -24,7 +24,7 @@ function SearchBar() {
         </div>
         <button 
           onClick={handleSearch}
-          className="px-4 sm:px-6 py-1.5 sm:py-2.5 bg-gray-50 border border-l-0 border-gray-300 rounded-r-full hover:bg-gray-100"
+          className="px-4 sm:px-6 py-2 sm:py-2.5 bg-gray-50 border border-l-0 border-gray-300 rounded-r-full hover:bg-gray-100"
         >
           <Search className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
