@@ -3,3 +3,18 @@
 html, body {
   overflow-x: hidden;
 }
+
+/* Prevent layout shift */
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
+/* Hide scrollbar but keep functionality */
+html::-webkit-scrollbar {
+  width: 0px;
+}
+
+html {
+  scrollbar-width: none;
+}
