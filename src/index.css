@@ -4,6 +4,11 @@ html, body {
   overflow-x: hidden;
 }
 
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+
 /* Prevent layout shift */
 html {
   overflow-y: scroll;
