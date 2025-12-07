@@ -5,17 +5,15 @@ import toast from 'react-hot-toast';
 // BASE CONFIG
 // ================================
 
-// Backend base URL - change if your backend is on a different port
 const BASE_URL = 'http://localhost:5000/api';
 
-// Axios instance
 const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 60000, // 60 seconds
+  timeout: 60000,
 });
 
-// Logout callback to handle token expiration
+// Logout callback
 let logoutCallback = null;
 export const setLogoutCallback = (callback) => {
   logoutCallback = callback;
@@ -36,44 +34,39 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response) {
-      const { status, data } = error.response;
-
-      // Token expired or unauthorized
-      if (status === 401) {
-        const message = data?.message?.toLowerCase() || '';
-        if (
-          message.includes('token') ||
-          message.includes('expired') ||
-          message.includes('invalid') ||
-          message.includes('unauthorized') ||
-          message.includes('jwt')
-        ) {
-          // Clear auth data
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-
-          // Call logout callback
-          if (logoutCallback) logoutCallback();
-
-          toast.error('Session expired. Please login again.');
-
-          // Redirect to home after short delay
-          setTimeout(() => (window.location.href = '/'), 1000);
-        }
-      }
-
-      // Server errors
-      if (status === 500) toast.error('Server error. Please try again later.');
-      if (status === 503) toast.error('Service unavailable. Please try again.');
-    } else if (error.request) {
-      // No response from server
+    if (!error.response) {
       toast.error('Cannot connect to server. Check your internet.');
-    } else {
-      // Other errors
-      toast.error('Request error: ' + error.message);
+      return Promise.reject(error);
     }
 
+    const { status, data, config } = error.response;
+    const message = data?.message?.toLowerCase() || '';
+    const isAuthApi = config?.url?.includes('/auth/login') || 
+                      config?.url?.includes('/auth/register');
+
+    // ONLY token related 401 (NOT login)
+    if (status === 401 && !isAuthApi) {
+      if (
+        message.includes('token') ||
+        message.includes('expired') ||
+        message.includes('jwt') ||
+        message.includes('unauthorized')
+      ) {
+          // Clear auth data
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+
+          // Call logout callback
+        if (logoutCallback) logoutCallback();
+
+        toast.error('Session expired. Please login again.');
+
+          // Redirect to home after short delay
+        setTimeout(() => (window.location.href = '/'), 1000);
+      }
+    }
+
+    // LOGIN ERROR → let component handle it
     return Promise.reject(error);
   }
 );
@@ -82,12 +75,41 @@ api.interceptors.response.use(
 // AUTH APIs
 // ================================
 
+// Regsister new user
+export const register = async (formData) => {
+  try {
+    const res = await api.post('/auth/register', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Login user
+export const login = async (formData) => {
+  try {
+    const response = await api.post('/auth/login', formData);
+    return response.data;
+  } catch (error) {
+    const message =
+      error.response?.data?.message || 'Login failed. Try again.';
+    throw new Error(message);
+  }
+};
+
+
 // Update user avatar
 export const updateAvatar = async (formData) => {
-  const response = await api.put('/auth/avatar', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return response.data;
+  try {
+    const res = await api.put('/auth/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // ================================
@@ -96,76 +118,118 @@ export const updateAvatar = async (formData) => {
 
 // Get all videos
 export const getAllVideos = async () => {
-  const response = await api.get('/videos');
-  return response.data.videos;
+  try {
+    const res = await api.get('/videos');
+    return res.data.videos;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Get video by ID
 export const getVideoById = async (videoId) => {
-  const response = await api.get(`/videos/${videoId}`);
-  return response.data.video;
+  try {
+    const res = await api.get(`/videos/${videoId}`);
+    return res.data.video;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Get videos by category
 export const getVideosByCategory = async (category) => {
-  const encodedCategory = encodeURIComponent(category);
-  const response = await api.get(`/videos/category/${encodedCategory}`);
-  return response.data.videos;
+  try {
+    const res = await api.get(`/videos/category/${encodeURIComponent(category)}`);
+    return res.data.videos;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Search videos
 export const searchVideos = async (query) => {
-  const encodedQuery = encodeURIComponent(query);
-  const response = await api.get(`/videos/search?query=${encodedQuery}`);
-  return response.data.videos;
+  try {
+    const res = await api.get(`/videos/search?query=${encodeURIComponent(query)}`);
+    return res.data.videos;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Upload video
 export const uploadVideo = async (formData, onUploadProgress) => {
-  const response = await api.post('/videos/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-    timeout: 0, // Important for large uploads
-    onUploadProgress,
-  });
-  return response.data;
+  try {
+    const res = await api.post('/videos/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 0,
+      onUploadProgress,
+    });
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Update video
 export const updateVideo = async (videoId, formData) => {
-  const response = await api.put(`/videos/${videoId}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return response.data;
+  try {
+    const res = await api.put(`/videos/${videoId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Delete video
 export const deleteVideo = async (videoId) => {
-  const response = await api.delete(`/videos/${videoId}`);
-  return response.data;
+  try {
+    const res = await api.delete(`/videos/${videoId}`);
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Increment video views
 export const incrementVideoViews = async (videoId) => {
-  const response = await api.post(`/videos/${videoId}/view`);
-  return response.data;
+  try {
+    const res = await api.post(`/videos/${videoId}/view`);
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Toggle video like
 export const toggleVideoLike = async (videoId) => {
-  const response = await api.post(`/videos/${videoId}/like`);
-  return response.data;
+  try {
+    const res = await api.post(`/videos/${videoId}/like`);
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Toggle video dislike
 export const toggleVideoDislike = async (videoId) => {
-  const response = await api.post(`/videos/${videoId}/dislike`);
-  return response.data;
+  try {
+    const res = await api.post(`/videos/${videoId}/dislike`);
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Get like status
 export const getLikeStatus = async (videoId) => {
-  const response = await api.get(`/videos/${videoId}/like-status`);
-  return response.data;
+  try {
+    const res = await api.get(`/videos/${videoId}/like-status`);
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // ================================
@@ -174,26 +238,42 @@ export const getLikeStatus = async (videoId) => {
 
 // Get comments for a video
 export const getCommentsByVideo = async (videoId) => {
-  const response = await api.get(`/comment/video/${videoId}`);
-  return response.data.comments;
+  try {
+    const res = await api.get(`/comment/video/${videoId}`);
+    return res.data.comments;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Add comment
 export const addComment = async (videoId, text) => {
-  const response = await api.post(`/comment/video/${videoId}`, { text });
-  return response.data.comment;
+  try {
+    const res = await api.post(`/comment/video/${videoId}`, { text });
+    return res.data.comment;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Update comment
 export const updateComment = async (commentId, text) => {
-  const response = await api.put(`/comment/${commentId}`, { text });
-  return response.data.comment;
+  try {
+    const res = await api.put(`/comment/${commentId}`, { text });
+    return res.data.comment;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Delete comment
 export const deleteComment = async (commentId) => {
-  const response = await api.delete(`/comment/${commentId}`);
-  return response.data;
+  try {
+    const res = await api.delete(`/comment/${commentId}`);
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // ================================
@@ -202,71 +282,105 @@ export const deleteComment = async (commentId) => {
 
 // Create channel
 export const createChannel = async (formData) => {
-  const response = await api.post('/channel', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return { channel: response.data.data, message: response.data.message };
+  try {
+    const res = await api.post('/channel', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return { channel: res.data.data, message: res.data.message };
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Get all channels
 export const getAllChannels = async () => {
-  const response = await api.get('/channel');
-  return response.data.channels;
+  try {
+    const res = await api.get('/channel');
+    return res.data.channels;
+  } catch (error) {
+    throw error;
+  }
 };
 
-// Get single channel by ID
 export const getChannelById = async (channelId) => {
-  const response = await api.get(`/channel/${channelId}`);
-  return response.data;
+  try {
+    const res = await api.get(`/channel/${channelId}`);
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
-// Get current user's channel
 export const getMyChannel = async () => {
   try {
-    const response = await api.get('/channel/me');
-    return response.data;
+    const res = await api.get('/channel/me');
+    return res.data;
   } catch (error) {
-    if (error.response?.status === 404) return null; // User has no channel
+    if (error.response?.status === 404) return null;
     throw error;
   }
 };
 
 // Get videos of a channel
 export const getChannelVideos = async (channelId, sortBy = 'latest') => {
-  const response = await api.get(`/channel/${channelId}/videos?sort=${sortBy}`);
-  return response.data;
+  try {
+    const res = await api.get(`/channel/${channelId}/videos?sort=${sortBy}`);
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Update channel
 export const updateChannel = async (channelId, formData) => {
-  const response = await api.put(`/channel/${channelId}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return response.data;
+  try {
+    const res = await api.put(`/channel/${channelId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Delete channel
 export const deleteChannel = async (channelId) => {
-  const response = await api.delete(`/channel/${channelId}`);
-  return response.data;
+  try {
+    const res = await api.delete(`/channel/${channelId}`);
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Subscribe to channel
 export const subscribeChannel = async (channelId) => {
-  const response = await api.post(`/channel/${channelId}/subscribe`);
-  return response.data;
+  try {
+    const res = await api.post(`/channel/${channelId}/subscribe`);
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Unsubscribe from channel
 export const unsubscribeChannel = async (channelId) => {
-  const response = await api.post(`/channel/${channelId}/unsubscribe`);
-  return response.data;
+  try {
+    const res = await api.post(`/channel/${channelId}/unsubscribe`);
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Check subscription status
 export const checkSubscription = async (channelId) => {
-  const response = await api.get(`/channel/${channelId}/subscription-status`);  
-  return response.data;
+  try {
+    const res = await api.get(`/channel/${channelId}/subscription-status`);
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // ================================
@@ -277,7 +391,7 @@ export const checkSubscription = async (channelId) => {
 export const checkUserChannel = async () => {
   try {
     return await getMyChannel();
-  } catch (error) {
+  } catch {
     return null;
   }
 };
