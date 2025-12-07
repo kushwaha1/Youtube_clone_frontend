@@ -1,8 +1,20 @@
 import { Outlet } from 'react-router-dom'
 import './App.css'
 import { Toaster } from 'react-hot-toast'
+import { useDispatch } from 'react-redux';
+import { setLogoutCallback } from './services/api';
+import { logout } from './utils/AuthSlice';
+import { useEffect } from 'react';
 
 function App() {
+  const dispatch = useDispatch();
+
+  // Setup logout callback for API interceptor
+  useEffect(() => {
+    setLogoutCallback(() => {
+      dispatch(logout());
+    });
+  }, [dispatch]);
 
   return (
     <div>
