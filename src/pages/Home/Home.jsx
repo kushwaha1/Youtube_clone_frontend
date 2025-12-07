@@ -1,84 +1,159 @@
-import { React, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../../components/Header/Header";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import VideoGrid from "../../components/VideoGrid/VideoGrid";
-import { useSelector } from "react-redux";
+import { getAllVideos, searchVideos, getVideosByCategory } from "../../services/api";
 
+/**
+ * Home Component
+ * Main landing page for displaying videos with category filtering and search functionality
+ */
 function Home() {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { isAuthenticated } = useSelector(state => state.auth);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Sidebar toggle
+  const [videos, setVideos] = useState([]);             // Videos to display
+  const [loading, setLoading] = useState(false);        // Loading state
+  const [selectedCategory, setSelectedCategory] = useState("All"); // Currently selected category
+  const [searchQuery, setSearchQuery] = useState("");   // Search query
 
-    // Ye data backend se aayega
-    const videos = [
-        { id: 1, title: "Building a Modern Web App with React", channel: "Tech Academy", views: "1.2M", time: "3 days ago", duration: "15:23", thumbnail: "bg-gradient-to-br from-blue-400 to-purple-500" },
-        { id: 2, title: "10 JavaScript Tips Every Developer Should Know", channel: "Code Master", views: "890K", time: "1 week ago", duration: "12:45", thumbnail: "bg-gradient-to-br from-green-400 to-blue-500" },
-        { id: 3, title: "CSS Grid vs Flexbox: Complete Guide", channel: "Design Pro", views: "2.1M", time: "2 days ago", duration: "20:15", thumbnail: "bg-gradient-to-br from-pink-400 to-red-500" },
-        { id: 4, title: "React Hooks Explained in 30 Minutes", channel: "Quick Learn", views: "1.5M", time: "5 days ago", duration: "28:30", thumbnail: "bg-gradient-to-br from-yellow-400 to-orange-500" },
-        { id: 5, title: "Full Stack Development Roadmap 2024", channel: "Career Path", views: "3.2M", time: "1 day ago", duration: "45:12", thumbnail: "bg-gradient-to-br from-indigo-400 to-purple-500" },
-        { id: 6, title: "TypeScript Tutorial for Beginners", channel: "Learn Fast", views: "750K", time: "4 days ago", duration: "18:40", thumbnail: "bg-gradient-to-br from-cyan-400 to-blue-500" },
-        { id: 7, title: "Node.js Best Practices 2024", channel: "Backend Guru", views: "1.8M", time: "6 days ago", duration: "32:55", thumbnail: "bg-gradient-to-br from-lime-400 to-green-500" },
-        { id: 8, title: "UI/UX Design Principles", channel: "Creative Mind", views: "920K", time: "2 days ago", duration: "25:18", thumbnail: "bg-gradient-to-br from-rose-400 to-pink-500" },
-        { id: 9, title: "Docker Complete Guide", channel: "DevOps Daily", views: "1.1M", time: "1 week ago", duration: "38:22", thumbnail: "bg-gradient-to-br from-teal-400 to-cyan-500" },
-        { id: 10, title: "API Design Best Practices", channel: "Tech Talks", views: "680K", time: "3 days ago", duration: "22:10", thumbnail: "bg-gradient-to-br from-violet-400 to-purple-500" },
-        { id: 11, title: "Git and GitHub Masterclass", channel: "Code Academy", views: "2.5M", time: "5 days ago", duration: "41:33", thumbnail: "bg-gradient-to-br from-orange-400 to-red-500" },
-        { id: 12, title: "MongoDB Crash Course", channel: "Database Pro", views: "1.3M", time: "4 days ago", duration: "35:45", thumbnail: "bg-gradient-to-br from-emerald-400 to-teal-500" },
-    ];
+  // Predefined categories for filtering
+  const categories = [
+    "All",
+    "JavaScript",
+    "React",
+    "CSS",
+    "Node.js",
+    "TypeScript",
+    "Web Development",
+    "Tutorial",
+    "Live",
+    "Music",
+    "Gaming",
+    "News",
+  ];
 
-    const categories = ["All", "JavaScript", "React", "CSS", "Node.js", "TypeScript", "Web Development", "Tutorial", "Live", "Music", "Gaming", "News"];
+  /**
+   * Fetch videos whenever category or search query changes
+   */
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        setLoading(true);
 
-    return (
-        <div className="min-h-screen bg-white">
-            <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        // Priority 1: Search query
+        if (searchQuery.trim()) {
+          const data = await searchVideos(searchQuery);
+          setVideos(data || []);
+        } 
+        // Priority 2: Category filter (excluding "All")
+        else if (selectedCategory && selectedCategory !== "All") {
+          const data = await getVideosByCategory(selectedCategory);
+          setVideos(data || []);
+        } 
+        // Priority 3: Default - fetch all videos
+        else {
+          const data = await getAllVideos();
+          setVideos(data || []);
+        }
+      } catch (err) {
+        console.error("Error fetching videos:", err);
+        setVideos([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    fetchVideos();
+  }, [selectedCategory, searchQuery]);
 
-            <main className="lg:ml-20 pt-18">
-                {/* Categories */}
-                {isAuthenticated && (
-                    <div className="sticky top-14 bg-white border-b border-gray-200 px-4 lg:px-6 py-3 overflow-x-auto z-20">
-                        <div className="flex gap-3 w-max">
-                            {categories.map((cat, i) => (
-                                <button
-                                    key={i}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${i === 0 ? 'bg-black text-white' : 'bg-gray-100 hover:bg-gray-200'
-                                        }`}
-                                >
-                                    {cat}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                )}
+  /**
+   * Handle category button click
+   * @param {string} category 
+   */
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(category);
+    setSearchQuery(""); // Clear search when category changes
+  };
 
-                {/* Show message if not signed in, otherwise show videos */}
-                {!isAuthenticated ? (
-                    <div className="flex items-center justify-center min-h-[calc(100svh-72px)] px-4">
-                        <div className="
-                                bg-white 
-                                rounded-xl 
-                                shadow-[0_4px_16px_rgba(0,0,0,0.12)]
-                                px-10 
-                                py-8 
-                                max-w-2xl 
-                                w-full
-                                text-center
-                                "
-                        >
-                            <h2 className="text-2xl font-semibold mb-2 text-black">
-                                Try searching to get started
-                            </h2>
+  /**
+   * Handle search from Header component
+   * @param {string} query 
+   */
+  const handleSearch = (query) => {
+    if (!query || query.trim() === "") {
+      // Reset to default if search cleared
+      setSearchQuery("");
+      setSelectedCategory("All");
+    } else {
+      setSearchQuery(query.trim());
+      setSelectedCategory(""); // Deselect category when searching
+    }
+  };
 
-                            <p className="text-gray-600">
-                                Start watching videos to help us build a feed of videos that you'll love.
-                            </p>
-                        </div>
-                    </div>
-                ) : (
-                    <VideoGrid videos={videos} />
-                )}
-            </main>
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <Header 
+        onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+        onSearch={handleSearch}
+      />
+
+      {/* Sidebar */}
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      <main className="lg:ml-20 pt-18">
+        {/* Category Filter Bar */}
+        <div className="sticky top-14 bg-white border-b border-gray-200 px-4 lg:px-6 py-3 overflow-x-auto z-20">
+          <div className="flex gap-3 w-max">
+            {categories.map((cat, i) => (
+              <button
+                key={i}
+                onClick={() => handleCategoryClick(cat)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                  selectedCategory === cat
+                    ? "bg-black text-white"
+                    : "bg-gray-100 hover:bg-gray-200"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
-    );
-};
 
-export default Home
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        ) : videos.length === 0 ? (
+          /* Empty State */
+          <div className="flex flex-col items-center justify-center py-20">
+            <svg
+              className="w-24 h-24 text-gray-300 mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+              />
+            </svg>
+            <p className="text-gray-600 text-lg">
+              {searchQuery
+                ? `No videos found for "${searchQuery}"`
+                : `No videos found in ${selectedCategory}`}
+            </p>
+          </div>
+        ) : (
+          /* Videos Grid */
+          <VideoGrid videos={videos} />
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default Home;
