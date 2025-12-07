@@ -231,7 +231,7 @@ function VideoPlayer() {
                                         {videoData.uploader?.id !== user?.id && (
                                             <button
                                                 onClick={toggleSubscription}
-                                                className={`ml-4 px-6 py-2 rounded-full font-medium transition-colors 
+                                                className={`ml-5 px-4 py-2 rounded-full font-medium transition-colors 
                                                 ${isSubscribed
                                                         ? 'bg-gray-100 hover:bg-gray-200 text-black'
                                                         : 'bg-black hover:bg-gray-800 text-white'

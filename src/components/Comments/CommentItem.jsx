@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { ThumbsUp, ThumbsDown, MoreVertical } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, MoreVertical, Flag } from 'lucide-react';
 import CommentForm from './CommentForm';
+import toast from 'react-hot-toast';
 
 /**
  * CommentItem Component
@@ -17,14 +18,11 @@ function CommentItem({ comment, onEdit, onDelete }) {
     const [isEditing, setIsEditing] = useState(false); // Editing mode
     const [showMenu, setShowMenu] = useState(false);   // Dropdown menu visibility
     const [liked, setLiked] = useState(false);        // Like state
-    const [disliked, setDisliked] = useState(false);  // Dislike state
+    const [disliked, setDisliked] = useState(false);  // Dislike state  
 
     // Determine if current user is the comment owner
     const isOwner = user && (
-        user.id === comment.userId ||
-        user._id === comment.userId ||
-        user.id === comment.user?._id ||
-        user._id === comment.user?._id
+        user?.id === comment?.userId
     );
 
     /**
@@ -59,6 +57,12 @@ function CommentItem({ comment, onEdit, onDelete }) {
     const handleDislike = () => {
         if (liked) setLiked(false);
         setDisliked(!disliked);
+    };
+
+    // Report functionality (static for now)
+    const handleReport = () => {
+        toast.success('Comment reported. Thank you for helping keep our community safe.');
+        setShowMenu(false);
     };
 
     /**
@@ -108,7 +112,7 @@ function CommentItem({ comment, onEdit, onDelete }) {
                     <span className="text-xs text-gray-600">{comment.createdAt || 'Recently'}</span>
 
                     {/* Dropdown menu for comment owner */}
-                    {isOwner && (
+                    {user && (
                         <div className="ml-auto relative">
                             <button
                                 onClick={() => setShowMenu(!showMenu)}
@@ -124,27 +128,41 @@ function CommentItem({ comment, onEdit, onDelete }) {
 
                                     {/* Menu options */}
                                     <div className="absolute right-0 top-10 bg-white shadow-lg rounded-lg py-2 z-20 w-32 border border-gray-200">
-                                        <button
-                                            onClick={() => {
-                                                setIsEditing(true);
-                                                setShowMenu(false);
-                                            }}
-                                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
-                                        >
-                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                            </svg>
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={handleDelete}
-                                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 text-red-600 flex items-center gap-2"
-                                        >
-                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                                            </svg>
-                                            Delete
-                                        </button>
+                                        {isOwner ? (
+                                        // Owner sees: Edit & Delete
+                                            <>
+                                            <button
+                                                onClick={() => {
+                                                    setIsEditing(true);
+                                                    setShowMenu(false);
+                                                }}
+                                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                                            >
+                                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                                </svg>
+                                                Edit
+                                            </button>
+                                            <button
+                                                onClick={handleDelete}
+                                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 text-red-600 flex items-center gap-2"
+                                            >
+                                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                                </svg>
+                                                Delete
+                                            </button>
+                                            </>
+                                        ) : (
+                                            // Others see: Report only
+                                            <button
+                                                onClick={handleReport}
+                                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                                            >
+                                                <Flag className="w-4 h-4" />
+                                                Report
+                                            </button>
+                                        )}
                                     </div>
                                 </>
                             )}

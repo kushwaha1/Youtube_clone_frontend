@@ -61,7 +61,7 @@ function Channel() {
                 handle: `@${channel.owner?.userName || channel.owner?.name || 'user'}`,
                 subscribers: channel.subscribers || 0,
                 totalVideos: channel.videos?.length || 0,
-                description: channel.description || 'No description',
+                description: channel.description || 'Welcome to my channel...',
 
                 // Cloudinary URLs or direct fallback
                 banner: channel?.channelBanner ?? channel?.channelBanner?.url,
@@ -112,28 +112,32 @@ function Channel() {
 
                 {/* Main content */}
                 <main className="flex-1 lg:ml-20">
-                    {channelData && (
-                        <>
-                            {/* Channel header (banner, avatar, name, stats) */}
-                            <ChannelHeader 
-                                channelData={channelData}
-                                onChannelUpdate={fetchChannelData} // Refresh channel on update
-                            />
+                    <div className="flex flex-col gap-4 sm:gap-6 p-2 sm:p-4 lg:p-6 max-w-[100vw] overflow-hidden">
+                        {channelData && (
+                            <>
+                                {/* Channel header (banner, avatar, name, stats) */}
+                                <ChannelHeader
+                                    channelData={channelData}
+                                    onChannelUpdate={fetchChannelData} // Refresh channel on update
+                                />
 
-                            {/* Tabs navigation (Home, Videos, Shorts, etc.) */}
-                            <ChannelTabs 
-                                activeTab={activeTab} 
-                                setActiveTab={setActiveTab}
-                            />
+                                {/* Tabs navigation (Home, Videos, Shorts, etc.) */}
+                                <ChannelTabs
+                                    activeTab={activeTab}
+                                    setActiveTab={setActiveTab}
+                                />
 
-                            {/* Channel videos list based on active tab */}
-                            <ChannelVideos 
-                                channelId={channelId} 
-                                activeTab={activeTab}
-                                isOwner={channelData.isOwner}
-                            />
-                        </>
-                    )}
+                                {/* Channel videos list based on active tab */}
+                                <ChannelVideos
+                                    channelId={channelId}
+                                    activeTab={activeTab}
+                                    isOwner={channelData.isOwner}
+                                />
+                            </>
+                        )}
+
+                    </div>
+
                 </main>
             </div>
         </div>

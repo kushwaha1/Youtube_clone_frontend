@@ -285,24 +285,23 @@ function Header({ onMenuClick, onSearch }) {
             </button>
           )}
         </div>
-      </header>
-
-      {/* Mobile Search Overlay */}
-      {showMobileSearch && (
-        <div className="md:hidden absolute inset-0 bg-white flex items-center px-2 gap-2 z-50">
-          <button onClick={() => setShowMobileSearch(false)} className="p-2 hover:bg-gray-100 rounded-full">
-            <X className="w-5 h-5" />
-          </button>
-          <div className="flex-1">
-            <SearchBar
-              onSearch={(query) => {
-                onSearch?.(query);
-                setShowMobileSearch(false);
-              }}
-            />
+        {/* Mobile Search Overlay */}
+        {showMobileSearch && (
+          <div className="md:hidden absolute inset-0 bg-white flex items-center px-2 gap-2 z-50">
+            <button onClick={() => setShowMobileSearch(false)} className="p-2 hover:bg-gray-100 rounded-full">
+              <X className="w-5 h-5" />
+            </button>
+            <div className="flex-1 flex justify-center">
+              <SearchBar
+                onSearch={(query) => {
+                  onSearch?.(query);
+                }}
+                onClose={() => setShowMobileSearch(false)}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </header>
 
       {/* Modals */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialMode="login" />

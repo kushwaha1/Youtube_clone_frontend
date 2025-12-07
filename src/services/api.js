@@ -302,6 +302,7 @@ export const getAllChannels = async () => {
   }
 };
 
+// get channel by Id
 export const getChannelById = async (channelId) => {
   try {
     const res = await api.get(`/channel/${channelId}`);
@@ -311,6 +312,7 @@ export const getChannelById = async (channelId) => {
   }
 };
 
+// get my channel
 export const getMyChannel = async () => {
   try {
     const res = await api.get('/channel/me');

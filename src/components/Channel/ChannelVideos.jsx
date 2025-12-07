@@ -204,7 +204,7 @@ function ChannelVideos({ channelId, activeTab, isOwner }) {
                                             e.stopPropagation();
                                             setShowMenu(showMenu === video._id ? null : video._id);
                                         }}
-                                        className="p-1.5 bg-black bg-opacity-70 hover:bg-opacity-90 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="p-1.5 bg-black opacity-80 hover:bg-opacity-90 rounded-full text-white group-hover:opacity-100 transition-opacity"
                                     >
                                         <MoreVertical className="w-4 h-4" />
                                     </button>
