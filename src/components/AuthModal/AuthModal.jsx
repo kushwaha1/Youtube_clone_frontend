@@ -91,8 +91,6 @@ function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
         setLoading(true);
 
         try {
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
             if (mode === 'register') {
                 // Registration API call with form data
                 const formDataToSend = new FormData();

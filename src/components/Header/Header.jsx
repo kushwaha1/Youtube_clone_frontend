@@ -11,22 +11,23 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getMyChannel } from '../../services/api';
 
 function Header({ onMenuClick, onSearch }) {
+  // Redux setup
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useSelector(state => state.auth);
 
-  // Modal & dropdown states
+  // Modal states
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false);
 
-  // User's channel info
+  // User data
   const [userChannel, setUserChannel] = useState(null);
 
-  // Mobile search overlay
+  // Mobile UI state
   const [showMobileSearch, setShowMobileSearch] = useState(false);
 
-  // Fetch user's channel if authenticated
+  // Fetch user's channel when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       fetchUserChannel();
@@ -35,16 +36,17 @@ function Header({ onMenuClick, onSearch }) {
     }
   }, [isAuthenticated]);
 
+  // API call to get user's channel data
   const fetchUserChannel = async () => {
     try {
       const response = await getMyChannel();
       setUserChannel(response.channel || null);
     } catch {
-      setUserChannel(null); // User has no channel yet
+      setUserChannel(null);
     }
   };
 
-  // Logout user
+  // Handle user logout
   const handleLogout = () => {
     dispatch(logout());
     toast.success('Logged out successfully');
@@ -52,7 +54,7 @@ function Header({ onMenuClick, onSearch }) {
     setUserChannel(null);
   };
 
-  // Handle channel view or creation
+  // Navigate to channel or open creation modal
   const handleViewChannel = () => {
     if (userChannel) {
       navigate(`/channel/${userChannel.id}`);
@@ -62,7 +64,7 @@ function Header({ onMenuClick, onSearch }) {
     setIsDropdownOpen(false);
   };
 
-  // Update state after channel creation
+  // After channel creation, update state and navigate
   const handleChannelCreated = (newChannel) => {
     setIsCreateChannelModalOpen(false);
     setUserChannel(newChannel);
@@ -72,10 +74,10 @@ function Header({ onMenuClick, onSearch }) {
 
   return (
     <>
-      {/* Header */}
+      {/* Main Header - Fixed at top */}
       <header className="flex items-center justify-between px-2 sm:px-4 py-2 bg-white fixed top-0 left-0 right-0 z-50 h-14">
 
-        {/* LEFT: Menu & Logo */}
+        {/* LEFT SECTION: Menu button & YouTube logo */}
         <div className="flex items-center gap-2 sm:gap-4">
           <button onClick={onMenuClick} className="p-2 hover:bg-gray-100 rounded-full">
             <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -88,20 +90,20 @@ function Header({ onMenuClick, onSearch }) {
           </Link>
         </div>
 
-        {/* CENTER: Desktop Search */}
+        {/* CENTER SECTION: Search bar (desktop only) */}
         <div className="hidden md:flex flex-1 justify-center">
           <SearchBar onSearch={onSearch} />
         </div>
 
-        {/* RIGHT: Icons, Profile & Mobile Search */}
+        {/* RIGHT SECTION: Action icons & profile */}
         <div className="flex items-center gap-1 sm:gap-2">
 
-          {/* Mobile Search Button */}
+          {/* Mobile search icon */}
           <button onClick={() => setShowMobileSearch(true)} className="md:hidden p-2">
             <Search className="w-5 h-5" />
           </button>
 
-          {/* Authenticated Icons */}
+          {/* Show upload & notification icons only when logged in */}
           {isAuthenticated && (
             <>
               <Link to="/upload">
@@ -115,9 +117,10 @@ function Header({ onMenuClick, onSearch }) {
             </>
           )}
 
-          {/* Profile / Sign In */}
+          {/* Profile dropdown OR Sign In button */}
           {isAuthenticated ? (
             <div className="relative">
+              {/* Profile button */}
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full flex items-center gap-2"
@@ -135,13 +138,14 @@ function Header({ onMenuClick, onSearch }) {
               {/* Dropdown Menu */}
               {isDropdownOpen && (
                 <>
-                  {/* Overlay to close dropdown */}
+                  {/* Backdrop to close dropdown on click outside */}
                   <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)}></div>
 
-                  <div className="absolute right-0 top-12 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50">
+                  {/* Dropdown content - SCROLLABLE with max-height */}
+                  <div className="absolute right-0 top-12 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[calc(100vh-80px)] overflow-y-auto">
 
-                    {/* User Info */}
-                    <div className="px-4 py-3 border-b border-gray-200">
+                    {/* User profile section */}
+                    <div className="px-4 py-3 border-b border-gray-200 sticky top-0 bg-white z-10">
                       <div className="flex items-center gap-3">
                         {user?.avatar ? (
                           <img src={user.avatar} alt={user.name} loading="lazy" className="w-10 h-10 rounded-full object-cover" />
@@ -160,7 +164,7 @@ function Header({ onMenuClick, onSearch }) {
                       </button>
                     </div>
 
-                    {/* Menu Actions */}
+                    {/* Primary actions */}
                     <div className="py-2">
                       <button onClick={handleViewChannel} className="w-full px-4 py-2 hover:bg-gray-100 flex items-center gap-3 text-sm text-left">
                         <User className="w-5 h-5" />
@@ -205,7 +209,7 @@ function Header({ onMenuClick, onSearch }) {
                       </button>
                     </div>
 
-                    {/* Data & Settings */}
+                    {/* Settings & Preferences */}
                     <div className="border-t border-gray-200 py-2">
                       <button className="w-full px-4 py-2 hover:bg-gray-100 flex items-center gap-3 text-sm text-left">
                         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -214,7 +218,6 @@ function Header({ onMenuClick, onSearch }) {
                         <span>Your data in YouTube</span>
                       </button>
 
-                      {/* Theme Toggle */}
                       <button className="w-full px-4 py-2 hover:bg-gray-100 flex items-center gap-3 text-sm text-left">
                         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z" />
@@ -247,7 +250,7 @@ function Header({ onMenuClick, onSearch }) {
                       </button>
                     </div>
 
-                    {/* Settings / Help / Feedback */}
+                    {/* Help & Support - DUPLICATE REMOVED */}
                     <div className="border-t border-gray-200 py-2">
                       <button className="w-full px-4 py-2 hover:bg-gray-100 flex items-center gap-3 text-sm text-left">
                         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -268,19 +271,12 @@ function Header({ onMenuClick, onSearch }) {
                         <span>Send feedback</span>
                       </button>
                     </div>
-
-                    {/* Settings / Help / Feedback */}
-                    <div className="border-t border-gray-200 py-2">
-                      <button className="w-full px-4 py-2 hover:bg-gray-100 flex items-center gap-3 text-sm">Settings</button>
-                      <button className="w-full px-4 py-2 hover:bg-gray-100 flex items-center gap-3 text-sm">Help</button>
-                      <button className="w-full px-4 py-2 hover:bg-gray-100 flex items-center gap-3 text-sm">Send feedback</button>
-                    </div>
                   </div>
                 </>
               )}
             </div>
           ) : (
-            // Sign In Button
+            // Sign In button
             <button onClick={() => setIsAuthModalOpen(true)} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full flex gap-1.5 items-center">
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-[#176AD7] flex items-center justify-center">
                 <User className="w-4 h-4 sm:w-5 sm:h-5 text-[#176AD7]" />
@@ -308,10 +304,8 @@ function Header({ onMenuClick, onSearch }) {
         </div>
       )}
 
-      {/* Auth Modal */}
+      {/* Modals */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialMode="login" />
-
-      {/* Create Channel Modal */}
       <CreateChannelModal
         isOpen={isCreateChannelModalOpen}
         onClose={() => setIsCreateChannelModalOpen(false)}
