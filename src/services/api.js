@@ -5,7 +5,8 @@ import toast from 'react-hot-toast';
 // BASE CONFIG
 // ================================
 
-const BASE_URL = 'http://localhost:5000/api';
+// const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://youtube-clone-backend-cci8.onrender.com/api';
 
 const api = axios.create({
   baseURL: BASE_URL,
