@@ -3,7 +3,7 @@ import './App.css'
 import { Toaster } from 'react-hot-toast'
 import { useDispatch } from 'react-redux';
 import { setLogoutCallback } from './services/api';
-import { logout } from './utils/AuthSlice';
+import { logout } from './utils/authSlice';
 import { useEffect } from 'react';
 
 function App() {

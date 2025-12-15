@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import "../AuthModal/AuthModal.css";
 import { useDispatch } from 'react-redux';
 import axios from 'axios';
-import { loginSuccess } from '../../utils/AuthSlice';
+import { loginSuccess } from '../../utils/authSlice';
 import { login, register } from '../../services/api';
 
 function AuthModal({ isOpen, onClose, initialMode = 'login' }) {

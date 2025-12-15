@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { Settings, Camera, Upload } from 'lucide-react';
 import { updateAvatar, updateChannel } from '../../services/api';
 import { useSubscription } from '../../hook/useSubscription';
-import { updateUser } from '../../utils/AuthSlice';
+import { updateUser } from '../../utils/authSlice';
 
 function ChannelHeader({ channelData, onChannelUpdate }) {
     const navigate = useNavigate();

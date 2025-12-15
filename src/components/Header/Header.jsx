@@ -5,7 +5,7 @@ import SearchBar from '../SearchBar/SearchBar';
 import AuthModal from '../AuthModal/AuthModal';
 import CreateChannelModal from '../Channel/CreateChannelModal';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../utils/AuthSlice';
+import { logout } from '../../utils/authSlice';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import { getMyChannel } from '../../services/api';
